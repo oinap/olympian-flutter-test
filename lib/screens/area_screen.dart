@@ -36,14 +36,16 @@ class AreaScreen extends StatelessWidget {
                   ? 'Открыть выбранное слово. Нельзя открыть последнее слово'
                   : 'Открыть выбранное слово. Выберете ячейку',
             ),
-            const SizedBox(height: 66,),
+            const SizedBox(
+              height: 66,
+            ),
           ],
         ),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           elevation: 0,
           toolbarHeight: 76.0,
-          flexibleSpace: ScoreBar(
+          flexibleSpace: const ScoreBar(
             withPadding: true,
             showLevel: true,
             prevScreen: 'Level',
@@ -129,6 +131,10 @@ class __NestedScrollState extends State<_NestedScroll> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           ...group.map((word) {
+                            // Если это первый уровень и первое слово в первой группе, установить  shouldShowLottie в true
+                            final shouldShowLottie = vm.getLevelIndex() == 1 &&
+                                vm.groups.first.indexOf(word) == 0;
+
                             final key =
                                 word == vm.scrollableWord ? dataKey : null;
                             if (key != null) {
@@ -165,6 +171,7 @@ class __NestedScrollState extends State<_NestedScroll> {
                                 word: word,
                                 showEndLeaf: showEndLeaf,
                                 showStartLeaf: showStartLeaf,
+                                shouldShowLottie: shouldShowLottie,
                               ),
                             );
                           }).toList(),

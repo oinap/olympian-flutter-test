@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../viewmodels/game_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -16,12 +17,14 @@ class WordItem extends StatefulWidget {
   final WordModel word;
   final bool showStartLeaf;
   final bool showEndLeaf;
+  final bool shouldShowLottie; // параметр для анимации
 
   const WordItem({
     Key? key,
     required this.word,
     this.showStartLeaf = false,
     this.showEndLeaf = true,
+    this.shouldShowLottie = false,
   }) : super(key: key);
 
   @override
@@ -41,9 +44,9 @@ class _WordItemState extends State<WordItem> {
 
     _wordFocusNode.addListener(() {
       context.read<GameViewModel>().wordFocus(
-        word: widget.word,
-        focus: _wordFocusNode.hasFocus,
-      );
+            word: widget.word,
+            focus: _wordFocusNode.hasFocus,
+          );
 
       if (!_wordFocusNode.hasFocus) {
         context.read<GameViewModel>().clearActiveWord();
@@ -66,21 +69,22 @@ class _WordItemState extends State<WordItem> {
           onShow: () {
             _wordFocusNode.unfocus();
             _textController.clear();
-          }
-      );
+          });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final showInput = [WordState.idle, WordState.incorrect, WordState.input].contains(widget.word.state);
-    final showImageInput = widget.word.image != '' || widget.word.description != '';
+    final showInput = [WordState.idle, WordState.incorrect, WordState.input]
+        .contains(widget.word.state);
+    final showImageInput =
+        widget.word.image != '' || widget.word.description != '';
 
     if (!_wordFocusNode.hasFocus && _textController.value.text != '') {
       _textController.clear();
     }
 
-    final _isCorrectWordLong = widget.word.word.length > 10;
+    final isCorrectWordLong = widget.word.word.length > 10;
 
     return ExcludeSemantics(
       child: ShakeAnimation(
@@ -95,6 +99,15 @@ class _WordItemState extends State<WordItem> {
               width: 160,
               height: 66,
             ),
+
+            // проиграть lottie анимацию, если слово еще не отгадоно
+            // и параметер shouldShowLottie == true
+            if (widget.shouldShowLottie == true &&
+                widget.word.state != WordState.correct)
+              Positioned.fill(
+                child: Lottie.asset('assets/lottie/click_animation.json'),
+              ),
+
             if (widget.word.state == WordState.correct)
               Positioned(
                 top: 0,
@@ -109,7 +122,7 @@ class _WordItemState extends State<WordItem> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: ThemeText.wordItemCorrect.merge(
-                          TextStyle(fontSize: _isCorrectWordLong ? 12 : 16)),
+                          TextStyle(fontSize: isCorrectWordLong ? 12 : 16)),
                       textAlign: TextAlign.center,
                     ),
                   ),
